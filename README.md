@@ -4,6 +4,26 @@ Zero-dependency Node ESM. It builds a ternary block tree: 1 block -> 3 blocks (1
 Signals are active-low: **lit = 0, dark = 1**. A leaf bit is a region-count detector: it takes K noisy observations of a point and counts how many land in its sub-region. It is lit if count >= threshold and dark otherwise. The computer block takes a majority vote of its 8 bits (more than 4 lit -> lit). It can optionally use per-bit weights learned with a perceptron.
 In recursive mode each bit is itself a full tree, so depth d has 9^d blocks.
 
+
+## The rule: every bit gets a computer
+
+**A byte tree is not finished until you add a computer to every bit in the tree.**
+
+- 1 block splits into 3, and 3 split into 9.
+- Of the 9, **one is the computer** and the other **8 are data bits** (one byte).
+- To grow the tree, each of those 8 bits becomes its own 1 → 3 → 9 tree with its **own computer**, and that computer's lit/dark answer *is* the bit.
+- Repeat: depth 1 = 9 blocks, depth 2 = 81, depth 3 = 729. A bit that has no computer under it is only raw input, not part of the tree yet.
+
+```
+            [1]
+     ┌───────┼───────┐
+ [computer] [data]  [data]
+   ┌─┼─┐   ┌─┼─┐   ┌─┼─┐
+   C b b   b b b   b b b     <- 1 computer + 8 bits = 1 byte
+           │
+           └─ each bit = its own 1→3→9 tree with its own computer
+```
+
 ## Usage
     node byte-tree.mjs run --depth N [--seed S]
     node byte-tree.mjs compare [--n 10000] [--seed 42]
